@@ -1,0 +1,93 @@
+_schema-version: "3.2"
+ID: flp-plugin
+description: Fiori elements app
+version: 0.0.1
+modules:
+- name: flp-plugin-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: flp-plugin-destination-service
+    parameters:
+      content-target: true
+  - name: flp-plugin-repo-host
+    parameters:
+      service-key:
+        name: flp-plugin-repo-host-key
+  - name: flp-plugin-uaa
+    parameters:
+      service-key:
+        name: flp-plugin-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: flp-plugin_repo_host
+          ServiceInstanceName: flp-plugin-html5-srv
+          ServiceKeyName: flp-plugin-repo-host-key
+          sap.cloud.service: flp-plugin
+        - Authentication: OAuth2UserTokenExchange
+          Name: flp-plugin_uaa
+          ServiceInstanceName: flp-plugin-xsuaa-srv
+          ServiceKeyName: flp-plugin-uaa-key
+          sap.cloud.service: flp-plugin
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: flp-plugin-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: flp-plugin-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - comshellplugin.zip
+      name: comshellplugin
+      target-path: resources/
+- name: comshellplugin
+  type: html5
+  path: shell-plugin
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: flp-plugin-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: flp-plugin-xsuaa-srv
+    service-plan: application
+- name: flp-plugin-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: flp-plugin-destination-service
+    service-plan: lite
+- name: flp-plugin-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: flp-plugin-html5-srv
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo

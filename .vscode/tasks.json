@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "build-mta",
+			"label": "Build MTA based on projects/DEMO/mta.yaml",
+			"taskType": "Build",
+			"buildType": "Build MTA Project",
+			"mtaFilePath": "/home/user/projects/DEMO/mta.yaml"
+		}
+	]
+}

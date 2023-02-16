@@ -1,0 +1,93 @@
+_schema-version: "3.2"
+ID: DEMO
+description: Fiori elements app
+version: 0.0.1
+modules:
+- name: DEMO-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: DEMO-destination-service
+    parameters:
+      content-target: true
+  - name: DEMO-repo-host
+    parameters:
+      service-key:
+        name: DEMO-repo-host-key
+  - name: DEMO-uaa
+    parameters:
+      service-key:
+        name: DEMO-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: DEMO_repo_host
+          ServiceInstanceName: DEMO-html5-srv
+          ServiceKeyName: DEMO-repo-host-key
+          sap.cloud.service: DEMO
+        - Authentication: OAuth2UserTokenExchange
+          Name: DEMO_uaa
+          ServiceInstanceName: DEMO-xsuaa-srv
+          ServiceKeyName: DEMO-uaa-key
+          sap.cloud.service: DEMO
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: DEMO-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: DEMO-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - testapp.zip
+      name: testapp
+      target-path: resources/
+- name: testapp
+  type: html5
+  path: testapp
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: DEMO-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: DEMO-xsuaa-srv
+    service-plan: application
+- name: DEMO-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: DEMO-destination-service
+    service-plan: lite
+- name: DEMO-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: DEMO-html5-srv
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo

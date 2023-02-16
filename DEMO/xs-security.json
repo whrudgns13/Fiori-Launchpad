@@ -1,0 +1,18 @@
+{
+  "xsappname": "DEMO",
+  "tenant-mode": "dedicated",
+  "description": "Security profile of called application",
+  "scopes": [{
+    "name" : "$XSAPPNAME.Display",
+    "description" : "test Role"
+  }],
+  "role-templates": [{
+    "name" : "TEST-ROLE",
+    "description" : "Test Role Template",
+    "scope-references" : [
+      "$XSAPPNAME.Display"
+    ]
+  }]
+}
+
+
